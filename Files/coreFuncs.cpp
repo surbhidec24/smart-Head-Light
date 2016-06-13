@@ -17,7 +17,7 @@ using namespace std;
 #define TA_h 150
 #define TJ 5
 #define TX_l 20
-#define TX_h 80
+#define TX_h 150
 #define TW 5
 #define TH 5
 
@@ -30,7 +30,7 @@ struct minmax{
 	int min_x, min_y, max_x, max_y;
 };
 
-void getBoundingBoxes(Mat img){
+Mat getBoundingBoxes(Mat img, int &numPairs){
  	int height = img.rows;
 	int width = img.cols;
 	int idx = 1;
@@ -42,11 +42,13 @@ void getBoundingBoxes(Mat img){
 	Mat finalVectors = Mat::zeros(50, 5, CV_32F);
 
 	getShape(img_bw, finalVectors, idx);
-	int numPairs = 0;
 
     /*maximum number of pairs possible is the number of blobs detected*/
 	Mat pairs = Mat::zeros(idx-1, 4, CV_32F); 
 	getPairs(finalVectors,idx,numPairs, pairs);
+
+	finalBoundingBoxes(pairs, img, 0, 0, numPairs, 255);
+	return pairs;
 }
 
 void getShape(Mat img_bw, Mat &finalVectors, int &idx){
@@ -85,7 +87,7 @@ void getShape(Mat img_bw, Mat &finalVectors, int &idx){
     		}
     	}
     }
-    printVectors(finalVectors, idx-1, 5);
+    // printVectors(finalVectors, idx-1, 5);
     //printfBoundingBoxes(finalVectors, "float" , tempMatrix, 0, 1, idx-1, 1);
 }
 
@@ -172,10 +174,40 @@ void getPairs(Mat &vList, int idx, int &count, Mat &pairs){
 			j = j+1;
 		}
 	}
-	printVectors(pairs, count,4);
-	printVectors(vList,idx-1,5);
+	//printVectors(pairs, count,4);
+	//printVectors(vList,idx-1,5);
 }
 
+void getPairs_new(Mat &vList, int idx, int &count, vector<Rect> &pairs){
+	for (int i =0; i<idx-1; i++){
+		if(vList.at<float>(i,0) == 1)
+			continue;
 
+		int area = vList.at<float>(i,3) * vList.at<float>(i,4);
+		if(area <TA_l || area > TA_h){
+			vList.at<float>(i,0) = 1;
+			continue;
+		}
+
+		Rect tempRect;
+		int j = i+1;
+		while(j<idx-1 && abs(vList.at<float>(j,1)-vList.at<float>(i,1))<TJ && vList.at<float>(i,0) == 0){
+			int distance = abs(vList.at<float>(j,2)-vList.at<float>(i,2));
+			int width = abs(vList.at<float>(j,3)-vList.at<float>(i,3));
+			int height = abs(vList.at<float>(j,4)-vList.at<float>(i,4));
+			if(distance >TX_l && distance <TX_h && width <TW && height < TH){
+				tempRect.y = min(vList.at<float>(j,1),vList.at<float>(i,1));
+				tempRect.x = min(vList.at<float>(j,2),vList.at<float>(i,2));
+				tempRect.width = distance + max(vList.at<float>(j,3),vList.at<float>(i,3));
+				tempRect.height = max(vList.at<float>(j,4),vList.at<float>(i,4));
+				vList.at<float>(i,0) = 1;
+				vList.at<float>(j,0) = 1;
+				pairs.push_back(tempRect);
+				break;
+			}
+			j = j+1;
+		}
+	}
+}
 
  
