@@ -30,7 +30,7 @@ struct minmax{
 	int min_x, min_y, max_x, max_y;
 };
 
-Mat getBoundingBoxes(Mat img, int &numPairs){
+vector<Rect> getBoundingBoxes(Mat img){
  	int height = img.rows;
 	int width = img.cols;
 	int idx = 1;
@@ -43,11 +43,10 @@ Mat getBoundingBoxes(Mat img, int &numPairs){
 
 	getShape(img_bw, finalVectors, idx);
 
-    /*maximum number of pairs possible is the number of blobs detected*/
-	Mat pairs = Mat::zeros(idx-1, 4, CV_32F); 
-	getPairs(finalVectors,idx,numPairs, pairs);
+	vector<Rect> pairs;
+	getPairs(finalVectors,idx,pairs);
 
-	finalBoundingBoxes(pairs, img, 0, 0, numPairs, 255);
+	finalBoundingBoxes(pairs, img);
 	return pairs;
 }
 
@@ -146,39 +145,7 @@ void tracerUtil(Mat img_bw, Mat &tempMatrix , int start_i, int start_j, int i, i
     }
 }
 
-void getPairs(Mat &vList, int idx, int &count, Mat &pairs){
-	for (int i =0; i<idx-1; i++){
-		if(vList.at<float>(i,0) == 1)
-			continue;
-
-		int area = vList.at<float>(i,3) * vList.at<float>(i,4);
-		if(area <TA_l || area > TA_h){
-			vList.at<float>(i,0) = 1;
-			continue;
-		}
-		int j = i+1;
-		while(j<idx-1 && abs(vList.at<float>(j,1)-vList.at<float>(i,1))<TJ && vList.at<float>(i,0) == 0){
-			int distance = abs(vList.at<float>(j,2)-vList.at<float>(i,2));
-			int width = abs(vList.at<float>(j,3)-vList.at<float>(i,3));
-			int height = abs(vList.at<float>(j,4)-vList.at<float>(i,4));
-			if(distance >TX_l && distance <TX_h && width <TW && height < TH){
-				pairs.at<float>(count,0) = min(vList.at<float>(j,1),vList.at<float>(i,1));
-				pairs.at<float>(count,1) = min(vList.at<float>(j,2),vList.at<float>(i,2));
-				pairs.at<float>(count,2) = distance + max(vList.at<float>(j,3),vList.at<float>(i,3));
-				pairs.at<float>(count,3) = max(vList.at<float>(j,4),vList.at<float>(i,4));
-				vList.at<float>(i,0) = 1;
-				vList.at<float>(j,0) = 1;
-				count++;
-				break;
-			}
-			j = j+1;
-		}
-	}
-	//printVectors(pairs, count,4);
-	//printVectors(vList,idx-1,5);
-}
-
-void getPairs_new(Mat &vList, int idx, int &count, vector<Rect> &pairs){
+void getPairs(Mat &vList, int idx, vector<Rect> &pairs){
 	for (int i =0; i<idx-1; i++){
 		if(vList.at<float>(i,0) == 1)
 			continue;

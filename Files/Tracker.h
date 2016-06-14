@@ -1,3 +1,7 @@
+#ifndef TRACKER_1
+#define TRACKER_1
+#pragma once
+
 #include <opencv2/highgui/highgui.hpp>
 #include <opencv2/imgproc/imgproc.hpp>
 #include <opencv2/core/core.hpp>
@@ -12,10 +16,14 @@ using namespace cv;
 class Tracker{ 
 	public: 
 		KalmanFilter kf;
-		int x,y,width,height;
+		bool found;
+		int notFound;
+		Rect oldMeas;
 
 	public:
 		Tracker();
-		void Tracker(KalmanFilter kf, int x, int y, int width, int height); 
-		void updateTracker(int x, int y, int width, int height);
-}
+		void init_tracker();
+		void measAndUpdate(double dT, Rect box, Mat frame);
+};
+
+#endif

@@ -47,7 +47,7 @@ void readVideoAndBox(string filename){
         if(frame.empty())
             break;
         int numPairs = 0;
-        getBoundingBoxes(frame, numPairs);
+        getBoundingBoxes(frame);
         imshow("window", frame);
         waitKey(5); // waits to display frame
     }
@@ -113,25 +113,25 @@ void track(string filename){
 
     if( !capture.isOpened() )
         throw "Error when reading steam_avi";
-    vector<Point> centroids;
     namedWindow( "window", 1);
     double precTick, dT, ticks = 0;
 
-    for(int i = 0; i<1000; i++ )
+    for(int i =0; i<216;i++)
     {   
         capture >> frame;
         if(frame.empty())
             break;
-        int numPairs = 0;
-        Mat pairs = getBoundingBoxes(frame,numPairs);
+        vector <Rect> pairs = getBoundingBoxes(frame);
 
         precTick = ticks;
         ticks = (double) cv::getTickCount();
         dT = (ticks - precTick) / cv::getTickFrequency();
 
-        if (pairs.at<float>(2) == 0 || pairs.at<float>(3) == 0)
+    //     if (pairs.at<float>(2) == 0 || pairs.at<float>(3) == 0)
+    //         continue;
+    //     //printVectors(pairs, 1, pairs.cols);
+        if(pairs.size()==0)
             continue;
-        //printVectors(pairs, 1, pairs.cols);
 
         if (found) //will not execute in 1st find
         {
@@ -139,7 +139,7 @@ void track(string filename){
             kf.transitionMatrix.at<float>(2) = dT;
             kf.transitionMatrix.at<float>(9) = dT;
          // <<<< Matrix A
-            cout << "dT:" << endl << dT << endl;
+            //cout << "dT:" << endl << dT << endl;
  
             state = kf.predict();
             cout << "State post:" << endl << state << endl;            
@@ -155,17 +155,17 @@ void track(string filename){
             Scalar color = Scalar(255,0,0);
             rectangle( frame, predRect, color, 1, 8, 0 );
             imshow("window", frame);
-            waitKey(15); 
+            waitKey(5); 
                        
         } 
         ////////// try making pair, a vector of rect /////////////
-        meas.at<float>(0) = pairs.at<float>(0,1) + pairs.at<float>(0,2) / 2;
-        meas.at<float>(1) = pairs.at<float>(0,0) + pairs.at<float>(0,3) / 2;
-        meas.at<float>(2) = (float)pairs.at<float>(0,2);
-        meas.at<float>(3) = (float)pairs.at<float>(0,3); 
+        meas.at<float>(0) = pairs[0].x + pairs[0].width / 2;
+        meas.at<float>(1) = pairs[0].y + pairs[0].height / 2;
+        meas.at<float>(2) = (float)pairs[0].width;
+        meas.at<float>(3) = (float)pairs[0].height; 
 
-        if (!found) // First detection!
-         {
+        if (!found){
+            // first detection
             // >>>> Initialization
             kf.errorCovPre.at<float>(0) = 1; // px
             kf.errorCovPre.at<float>(7) = 1; // px
@@ -181,13 +181,87 @@ void track(string filename){
             state.at<float>(4) = meas.at<float>(2);
             state.at<float>(5) = meas.at<float>(3);
             // <<<< Initialization
- 
+    cout << i <<endl;
             found = true;
          }
          else
             kf.correct(meas); // Kalman Correction
  
-         cout << "Measure matrix:" << endl << meas << endl;
+          cout << "Measure matrix:" << endl << meas << endl;
     }
     waitKey(0);
+}
+
+void trackCars(string filename){
+    VideoCapture capture(filename);
+    Mat frame;
+    vector<Tracker> trackerList;
+
+    if( !capture.isOpened() )
+        throw "Error when reading steam_avi";
+    
+    double precTick, dT, ticks = 0;
+
+    for(int i = 0; i<21000; i++ ){   
+        capture >> frame;
+        if(frame.empty())
+            break;
+
+        precTick = ticks;
+        ticks = (double) cv::getTickCount();
+        dT = (ticks - precTick) / cv::getTickFrequency();
+        
+        vector<Rect> bBoxes;
+        bBoxes = getBoundingBoxes(frame);
+
+        if(bBoxes.size() == 0)
+            continue;
+
+        vector<Tracker>::iterator nIter;
+        for (nIter = trackerList.begin(); nIter != trackerList.end(); nIter++){
+
+            int idx = findNext((*nIter),bBoxes,5);
+            if(idx == -1){
+                nIter->notFound++;
+                if(nIter->notFound >=10){
+                    trackerList.erase(nIter);
+                    nIter--;
+                }
+            }
+            else{
+                nIter->measAndUpdate(dT, bBoxes[idx], frame);
+                bBoxes.erase(bBoxes.begin()+idx);
+            }
+            
+        }
+        vector<Rect>::iterator mIter;
+
+        for (mIter = bBoxes.begin(); mIter!= bBoxes.end(); mIter++){
+            Tracker newTracker;
+            newTracker.init_tracker();
+            newTracker.measAndUpdate(dT, (*mIter), frame);
+            trackerList.push_back(newTracker); ////wait a few frames?/////
+            bBoxes.erase(mIter);
+            mIter--;
+        }
+    }
+}
+
+int findNext(Tracker myTracker, vector<Rect>bBoxes, double thresh){
+    Rect oldMeasurements = myTracker.oldMeas;
+    double res;
+    
+    Point center;
+    center.x = oldMeasurements.x + (oldMeasurements.width/2);
+    center.y = oldMeasurements.y + (oldMeasurements.height/2);
+
+    for (int i = 0; i<bBoxes.size(); i++){
+        Point temp;
+        temp.x = bBoxes[i].x + (bBoxes[i].width/2);
+        temp.y = bBoxes[i].y + (bBoxes[i].height/2);
+        res = cv::norm(center-temp);
+        if(res <= thresh)
+            return i;
+    }
+    return -1;
 }

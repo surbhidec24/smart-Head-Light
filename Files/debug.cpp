@@ -78,17 +78,9 @@ void printfBoundingBoxes(Mat finalVectors, string type, Mat &image, int r, int c
   displayImage(image);
 } 
 
-void finalBoundingBoxes(Mat finalVectors, Mat &image, int r, int c, 
-      int numRows, int Hi){
-  Point pt_start;
-  Point pt_end;
-  for (int i=0; i<numRows; i++){
-    //Scalar color = Scalar( rng.uniform(0, 255), rng.uniform(0,255), rng.uniform(0,255) );
-    Scalar color = Scalar(255,255,255);
-    pt_start.x = finalVectors.at<float>(i,1);
-    pt_start.y = finalVectors.at<float>(i,0);
-    pt_end.x = finalVectors.at<float>(i,1) + finalVectors.at<float>(i,2);
-    pt_end.y = finalVectors.at<float>(i,0) + finalVectors.at<float>(i,3);
-    rectangle( image, pt_start, pt_end, color, 1, 8, 0 );
+void finalBoundingBoxes(vector<Rect> Pairs, Mat &image){
+  Scalar color = Scalar(255,255,255);
+  for (int i=0; i<Pairs.size(); i++){
+    rectangle( image, Pairs[i], color, 1, 8, 0 );
   }
 }
