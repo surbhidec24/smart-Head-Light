@@ -23,7 +23,8 @@ class Tracker{
 	public:
 		Tracker();
 		void init_tracker();
-		void measAndUpdate(double dT, Rect box, Mat frame);
+		void measAndUpdate(double dT, Rect box, Mat &frame);
+		void predict(double dT, Mat &frame);
 };
 
 #endif

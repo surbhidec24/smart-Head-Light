@@ -19,8 +19,7 @@ void readVideo(string filename);
 void displayImage(Mat img);
 void convert2Binary(Mat img, Mat &img_bw);
 void readVideoAndBox(string filename);
-void track(string filename);
-int findNext(Tracker myTracker, vector<Rect>bBoxes, double thresh);
+int findNext(Tracker myTracker, vector<Rect>bBoxes);
 void trackCars(string filename);
 
 #endif

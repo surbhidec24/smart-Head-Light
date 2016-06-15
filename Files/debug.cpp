@@ -10,20 +10,6 @@
 using namespace cv;
 using namespace std;
 
-// void printList(vector<featVector> list_blobs){
-// 	vector<featVector>::iterator iter;
-// 	vector<int>::iterator nIter;
-	
-//     for (iter = list_blobs.begin(); iter != list_blobs.end(); ++iter){
-//     	cout << iter->min_x <<'\t' << iter->max_x << '\t' << iter->min_y << '\t' << iter->max_y << '\t' << iter->height 
-//     	<<'\t' << iter->width << endl;
-//     	for (nIter = (*iter).shape.begin(); nIter != (*iter).shape.end(); ++nIter)
-//     		cout << (*nIter);
-//     	cout <<endl;
-//     }
-// }
-RNG rng(12345);
-
 /*returns the datatype of matrix M, in the format: 
 depth{U|S|F}C{No. of channels}*/
 string type2str(int type) {
@@ -57,30 +43,10 @@ void printVectors(Mat finalVectors, int r, int c){
 	}
 }
 
-void printfBoundingBoxes(Mat finalVectors, string type, Mat &image, int r, int c, int numRows, int Hi){
-  int x,y,h,w;  
-  for (int i = r; i<numRows; i++){
-    y = finalVectors.at<float>(i,c);
-    x = finalVectors.at<float>(i,c+1);
-    w = finalVectors.at<float>(i,c+2);
-    h = finalVectors.at<float>(i,c+3);
-
-    /*debugging purpose, to get bounding box around blobs*/
-    for (int j = y; j< y+h; j++){
-      image.at<float>(j,x) = Hi;
-      image.at<float>(j,x+w) = Hi;
-    }
-    for (int j = x; j< x+w; j++){
-      image.at<float>(y,j) = Hi;
-      image.at<float>(y+h,j) = Hi;
-    }
-  }
-  displayImage(image);
-} 
-
 void finalBoundingBoxes(vector<Rect> Pairs, Mat &image){
-  Scalar color = Scalar(255,255,255);
+  Scalar color = Scalar(0,255,0);
   for (int i=0; i<Pairs.size(); i++){
+    cout << Pairs[i].x << "\t" << Pairs[i].y << "\t" << Pairs[i].width << "\t" <<Pairs[i].height << endl;
     rectangle( image, Pairs[i], color, 1, 8, 0 );
   }
 }

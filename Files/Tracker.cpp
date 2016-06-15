@@ -13,11 +13,13 @@ using namespace cv;
 int stateSize = 6;
 int measSize = 4;
 int contrSize = 0;
+unsigned int type = CV_32F;
+Mat state(stateSize, 1, type);  
+Mat meas(measSize, 1, type);
 
 Tracker:: Tracker(){}
 
 void Tracker:: init_tracker(){
-	unsigned int type = CV_32F;
     KalmanFilter kf_(stateSize, measSize, contrSize, type);
     kf = kf_;  
 
@@ -35,12 +37,12 @@ void Tracker:: init_tracker(){
     kf.processNoiseCov.at<float>(28) = 1e-2;
     kf.processNoiseCov.at<float>(35) = 1e-2;
 
-    kf.errorCovPre.at<float>(0) = 1; // px
-    kf.errorCovPre.at<float>(7) = 1; // px
+    kf.errorCovPre.at<float>(0) = 1; 
+    kf.errorCovPre.at<float>(7) = 1; 
     kf.errorCovPre.at<float>(14) = 1;
     kf.errorCovPre.at<float>(21) = 1;
-    kf.errorCovPre.at<float>(28) = 1; // px
-    kf.errorCovPre.at<float>(35) = 1; // px
+    kf.errorCovPre.at<float>(28) = 1; 
+    kf.errorCovPre.at<float>(35) = 1;
 
     setIdentity(kf.measurementNoiseCov, cv::Scalar(1e-1));
 
@@ -48,39 +50,9 @@ void Tracker:: init_tracker(){
     notFound = 0;
 }
 
-void Tracker:: measAndUpdate(double dT, Rect box, Mat frame){
+void Tracker:: measAndUpdate(double dT, Rect box, Mat &frame){
 	oldMeas = box;
-	unsigned int type = CV_32F;
-	Mat state(stateSize, 1, type);  
-    Mat meas(measSize, 1, type);
-    namedWindow( "window", 1);
-
-	if (found){
-		//will not execute in 1st find
-         // >>>> Matrix A
-        cout <<dT <<endl;
-        kf.transitionMatrix.at<float>(2) = dT;
-        kf.transitionMatrix.at<float>(9) = dT;
-         // <<<< Matrix A
-        cout << "dT:" << endl << dT << endl;
-        
-        state = kf.predict();
-        cout << "State post:" << endl << state << endl;            
-        cv::Rect predRect;         
-        predRect.width = state.at<float>(4);         
-        predRect.height = state.at<float>(5);          
-        predRect.x = state.at<float>(0) - predRect.width / 2;          
-        predRect.y = state.at<float>(1) - predRect.height / 2;            
-        cv::Point center;          
-        center.x = state.at<float>(0);          
-        center.y = state.at<float>(1); 
-
-        Scalar color = Scalar(255,0,0);
-        rectangle(frame, predRect, color, 1, 8, 0 );
-        imshow("window", frame);
-        waitKey(5); 
-                   
-    } 
+    predict(dT,frame); 
 
     meas.at<float>(0) = box.x + box.width / 2;
     meas.at<float>(1) = box.y + box.height / 2;
@@ -103,5 +75,29 @@ void Tracker:: measAndUpdate(double dT, Rect box, Mat frame){
     else
 	    kf.correct(meas); // Kalman Correction
     
-    cout << "Measure matrix:" << endl << meas << endl;
+    //cout << "Measure matrix:" << endl << meas << endl;
+}
+
+void Tracker:: predict(double dT, Mat &frame){
+    if (found){
+         // >>>> Matrix A
+        kf.transitionMatrix.at<float>(2) = dT;
+        kf.transitionMatrix.at<float>(9) = dT;
+         // <<<< Matrix A
+        //cout << "dT:" << endl << dT << endl;
+        
+        state = kf.predict();
+        //cout << "State post:" << endl << state << endl;            
+        cv::Rect predRect;         
+        predRect.width = state.at<float>(4);         
+        predRect.height = state.at<float>(5);          
+        predRect.x = state.at<float>(0) - predRect.width / 2;          
+        predRect.y = state.at<float>(1) - predRect.height / 2;            
+        cv::Point center;          
+        center.x = state.at<float>(0);          
+        center.y = state.at<float>(1); 
+
+        Scalar color = Scalar(255,0,0);
+        rectangle(frame, predRect, color, 1, 8, 0 );
+    }
 }

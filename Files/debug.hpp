@@ -13,9 +13,7 @@
 using namespace cv;
 using namespace std;
 
-// void printList(vector<featVector> list_blobs);
 string type2str(int type);
-void printVectors(Mat finalVectors, int r, int c);
 void printfBoundingBoxes(Mat finalVectors, string type, Mat &image, int r, int c, int numRows, int Hi);
 void finalBoundingBoxes(vector<Rect> Pairs, Mat &image);
 
