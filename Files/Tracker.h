@@ -9,6 +9,7 @@
 #include <iostream>
 #include <vector>
 #include <math.h>
+#include <string>
 
 using namespace std;
 using namespace cv;
@@ -16,15 +17,21 @@ using namespace cv;
 class Tracker{ 
 	public: 
 		KalmanFilter kf;
+		Mat plot;
 		bool found;
+		string winname;
 		int notFound;
 		Rect oldMeas;
+		double startTick;
+		int count;
+		bool display;
 
 	public:
 		Tracker();
 		void init_tracker();
 		void measAndUpdate(double dT, Rect box, Mat &frame);
 		void predict(double dT, Mat &frame);
+		void plotGraph(float dx, float dy);
 };
 
 #endif

@@ -4,6 +4,7 @@
 #include <iostream>
 #include <vector>
 #include <math.h>
+#include <string>
 #include "inout.h"
 #include <opencv2/video/video.hpp>
 #include "debug.hpp"
@@ -16,6 +17,9 @@ using namespace std;
 #define binThresh 100.0
 #define pixelThresh 5
 #define appearThresh 15
+
+vector<Tracker> trackerList;
+int winCount;
 
 void readVideo(string filename){
     VideoCapture capture(filename);
@@ -76,13 +80,14 @@ void convert2Binary(Mat img, Mat &img_bw){
 void trackCars(string filename){
     VideoCapture capture(filename);
     Mat frame;
-    vector<Tracker> trackerList;
+    winCount = 0;
 
     if( !capture.isOpened() )
         throw "Error when reading steam_avi";
     
     double precTick, dT, ticks = 0;
     namedWindow( "window", 1);
+    setMouseCallback( "window", onMouse, 0);
     for(; ;){   
         capture >> frame;
         if(frame.empty())
@@ -119,6 +124,7 @@ void trackCars(string filename){
         }
         vector<Rect>::iterator mIter;
 
+        /*adding a new tracker for blobs which dont match previous blobs*/
         for (mIter = bBoxes.begin(); mIter!= bBoxes.end(); mIter++){
             Tracker newTracker;
             newTracker.init_tracker();
@@ -150,4 +156,28 @@ int findNext(Tracker myTracker, vector<Rect>bBoxes){
             return i;
     }
     return -1;
+}
+
+void onMouse( int event, int x, int y, int, void* ){
+    if( event != CV_EVENT_LBUTTONDOWN )
+            return;
+    Point pt = Point(x,y);
+    Rect temp;
+    //std::cout<<"x="<<pt.x<<"\t y="<<pt.y<<"\n";
+
+    vector<Tracker>::iterator nIter;
+    for (nIter = trackerList.begin(); nIter != trackerList.end(); nIter++){
+        temp.x = nIter->oldMeas.x-5;
+        temp.y = nIter->oldMeas.y-5;
+        temp.width = nIter->oldMeas.width +5;
+        temp.height = nIter->oldMeas.height +5;
+        if(pt.inside(temp)){
+            nIter->display = true;
+            stringstream out;
+            out << winCount;
+            nIter->winname = out.str();
+            winCount++;
+            break;
+        }
+    }
 }

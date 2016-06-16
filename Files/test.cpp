@@ -11,7 +11,7 @@ using namespace cv;
 using namespace std;
 
 int main( int argc, const char** argv ){
-  	trackCars("output2.avi");
-  	//trackCars("output4.avi");
+  	//trackCars("output2.avi");
+  	trackCars("output4.avi");
 	return 0;
 }

@@ -7,6 +7,7 @@
 #include <opencv2/core/core.hpp>
 #include <iostream>
 #include <vector>
+#include <string>
 #include "coreFuncs.hpp"
 #include <math.h>
 #include <opencv2/video/video.hpp>
@@ -21,5 +22,6 @@ void convert2Binary(Mat img, Mat &img_bw);
 void readVideoAndBox(string filename);
 int findNext(Tracker myTracker, vector<Rect>bBoxes);
 void trackCars(string filename);
+void onMouse( int event, int x, int y, int, void* );
 
 #endif

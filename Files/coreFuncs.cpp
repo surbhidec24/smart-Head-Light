@@ -29,9 +29,6 @@ struct minmax{
 };
 
 vector<Rect> getBoundingBoxes(Mat img){
- 	int height = img.rows;
-	int width = img.cols;
-	int idx = 1;
 
  	Mat img_bw;
 	convert2Binary(img,img_bw);
@@ -47,8 +44,6 @@ vector<Rect> getBoundingBoxes(Mat img){
 }
 
 vector<Rect> getBlobs(Mat img){
-	int height = img.rows;
-	int width = img.cols;
 
 	Mat img_bw;
 	convert2Binary(img,img_bw);

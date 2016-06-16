@@ -5,6 +5,7 @@
 #include <iostream>
 #include <vector>
 #include <math.h>
+#include <string>
 #include "Tracker.h"
 
 using namespace std;
@@ -16,6 +17,9 @@ int contrSize = 0;
 unsigned int type = CV_32F;
 Mat state(stateSize, 1, type);  
 Mat meas(measSize, 1, type);
+int size_w = 500;
+int size_h = 500;
+Point origin(10,size_w/2);
 
 Tracker:: Tracker(){}
 
@@ -47,7 +51,25 @@ void Tracker:: init_tracker(){
     setIdentity(kf.measurementNoiseCov, cv::Scalar(1e-1));
 
     found = false;
+    display = false;
     notFound = 0;
+    startTick = (double) cv::getTickCount();
+
+    Mat plot_(size_h,size_w,type);
+    plot = plot_;
+    count = 0;
+    
+    Point y1(10,size_h/2);
+    Point y2(plot.rows - 10,size_h/2);
+    Point x1(size_w/2,plot.cols-10);
+    Point x2(size_w/2,10);
+
+    // Scalar color = Scalar(255,255,255);
+    // arrowedLine(plot,origin,x2,color,1,8,0);
+    // arrowedLine(plot,origin,y2,color,1,8,0);
+    // arrowedLine(plot,origin,x1,color,1,8,0);
+    // arrowedLine(plot,origin,y1,color,1,8,0);
+    
 }
 
 void Tracker:: measAndUpdate(double dT, Rect box, Mat &frame){
@@ -97,7 +119,34 @@ void Tracker:: predict(double dT, Mat &frame){
         center.x = state.at<float>(0);          
         center.y = state.at<float>(1); 
 
+        // state(2) and state(3) have dx and dy;
+        plotGraph(state.at<float>(2), state.at<float>(3));
+        if (display == true){
+            namedWindow( winname , 1);
+            imshow( winname, plot);
+            waitKey(1);
+        }
+        double currentTick = (double) cv::getTickCount();
+        double time = currentTick- startTick / cv::getTickFrequency();
+        //cout << time <<endl;
+
         Scalar color = Scalar(255,0,0);
         rectangle(frame, predRect, color, 1, 8, 0 );
     }
+}
+
+void Tracker:: plotGraph(float dx, float dy){
+    Scalar color1 = Scalar(255,0,0);
+    Scalar color2 = Scalar(0,255,0);
+
+    Point centre;
+    centre.x = origin.x + count;
+    centre.y = (origin.y-dx);
+    circle(plot,centre,1,color1,1,8,0);
+
+    Point centre1;
+    centre1.x = origin.x + count;
+    centre1.y = (origin.y-dy);
+    circle(plot,centre1,1,color2,1,8,0);
+    count++;
 }
