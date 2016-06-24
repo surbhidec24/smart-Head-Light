@@ -9,9 +9,13 @@
 #include <opencv2/video/video.hpp>
 #include "debug.hpp"
 #include "coreFuncs.hpp"
+#include "matplotlibcpp.h"
+#include <cmath>
+#include <python2.7/Python.h>
 
 using namespace cv;
 using namespace std;
+namespace plt = matplotlibcpp;
 
 #define Hi 255
 #define binThresh 100.0
@@ -77,7 +81,7 @@ void convert2Binary(Mat img, Mat &img_bw){
 	imwrite("image_bw.jpg", img_bw);
 }
 
-void trackCars(string filename){
+int trackCars(string filename){
     VideoCapture capture(filename);
     Mat frame;
     winCount = 0;
@@ -123,7 +127,6 @@ void trackCars(string filename){
             
         }
         vector<Rect>::iterator mIter;
-
         /*adding a new tracker for blobs which dont match previous blobs*/
         for (mIter = bBoxes.begin(); mIter!= bBoxes.end(); mIter++){
             Tracker newTracker;
@@ -137,6 +140,7 @@ void trackCars(string filename){
         imshow("window", frame);
         waitKey(1); 
     }
+    return winCount;
 }
 
 int findNext(Tracker myTracker, vector<Rect>bBoxes){
@@ -174,8 +178,8 @@ void onMouse( int event, int x, int y, int, void* ){
         if(pt.inside(temp)){
             nIter->display = true;
             stringstream out;
-            out << winCount;
-            nIter->winname = out.str();
+            out<< winCount;
+            nIter->fileName = out.str();
             winCount++;
             break;
         }

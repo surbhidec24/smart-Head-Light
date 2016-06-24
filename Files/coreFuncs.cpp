@@ -24,10 +24,6 @@ using namespace std;
 int x[] = {0,1,1,1,0,-1,-1,-1}; 
 int y[] = {1,1,0,-1,-1,-1,0,1}; 
 
-struct minmax{
-	int min_x, min_y, max_x, max_y;
-};
-
 vector<Rect> getBoundingBoxes(Mat img){
 
  	Mat img_bw;
@@ -95,19 +91,19 @@ void tracer(Mat img_bw, Mat &tempMatrix, int start_i, int start_j, int init, vec
 
 	/////////change to pair of points 2d point./////////
 	///////correct the tracer x and y ///////
-	minmax *newVector = new minmax;
-	newVector->min_x = newVector->max_x = start_i;
-	newVector->min_y = newVector->max_y = start_j;
+	Point myMin,myMax;
+	myMin.x = myMax.x = start_i;
+	myMin.y = myMax.y = start_j;
 
 	tempMatrix.at<float>(start_i,start_j) = 1;
-    tracerUtil(img_bw, tempMatrix ,start_i, start_j, start_i, start_j, init, newVector);
+    tracerUtil(img_bw, tempMatrix ,start_i, start_j, start_i, start_j, init, myMin, myMax);
 
-    width = newVector-> max_y - newVector -> min_y;
-    height = newVector->max_x - newVector->min_x;
+    width = myMax.y - myMin.y;
+    height = myMax.x - myMin.x;
 
     Rect tempRect;
-    tempRect.y = newVector->min_x;
-    tempRect.x = newVector->min_y;
+    tempRect.y = myMin.x;
+    tempRect.x = myMin.y;
     tempRect.width = width;
     tempRect.height = height;
 
@@ -115,24 +111,24 @@ void tracer(Mat img_bw, Mat &tempMatrix, int start_i, int start_j, int init, vec
 }
 
 void tracerUtil(Mat img_bw, Mat &tempMatrix , int start_i, int start_j, int i, int j, int init, 
-			minmax *newVector){
+			Point &myMin, Point &myMax){
 	
 	/*start with d+2(mod 8)*/
 	init = (init+6)%8;
 
 	int count = 0;
 
-	if(i < newVector->min_x)
-		 newVector->min_x = i;
+	if(i < myMin.x)
+		 myMin.x = i;
 
-	if(i > newVector->max_x)
-		 newVector->max_x = i;
+	if(i > myMax.x)
+		 myMax.x = i;
 
-	if(j < newVector->min_y)
-		 newVector->min_y = j;
+	if(j < myMin.y)
+		 myMin.y = j;
 
-	if(j > newVector->max_y)
-		 newVector->max_y = j;
+	if(j > myMax.y)
+		 myMax.y = j;
 
 	while(img_bw.at<uchar>(i+x[init],j+y[init]) != Hi && count <8) {
 		init = (init + 1) % 8;
@@ -145,7 +141,7 @@ void tracerUtil(Mat img_bw, Mat &tempMatrix , int start_i, int start_j, int i, i
 
     if(count<8 && tempMatrix.at<float>(i + x[init],j + y[init])!=1){
     	tempMatrix.at<float>(i + x[init],j + y[init]) = 1;
-    	tracerUtil(img_bw, tempMatrix, start_i, start_j, i+x[init], j+y[init], init, newVector);
+    	tracerUtil(img_bw, tempMatrix, start_i, start_j, i+x[init], j+y[init], init, myMin, myMax);
     }
 }
 

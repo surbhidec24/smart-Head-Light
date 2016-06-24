@@ -19,12 +19,16 @@ class Tracker{
 		KalmanFilter kf;
 		Mat plot;
 		bool found;
-		string winname;
 		int notFound;
 		Rect oldMeas;
 		double startTick;
 		int count;
 		bool display;
+		/*vectors store dx,dy for graph display*/
+		vector<double>dx;
+		vector<double>dy;
+		vector<double>time;
+		String fileName;
 
 	public:
 		Tracker();

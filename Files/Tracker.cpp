@@ -6,6 +6,8 @@
 #include <vector>
 #include <math.h>
 #include <string>
+#include <fstream>
+
 #include "Tracker.h"
 
 using namespace std;
@@ -55,14 +57,17 @@ void Tracker:: init_tracker(){
     notFound = 0;
     startTick = (double) cv::getTickCount();
 
-    Mat plot_(size_h,size_w,type);
-    plot = plot_;
-    count = 0;
+    //plt::plot({1,2,3,4});
+    //plt::show();
+
+    // Mat plot_(size_h,size_w,type);
+    // plot = plot_;
+    // count = 0;
     
-    Point y1(10,size_h/2);
-    Point y2(plot.rows - 10,size_h/2);
-    Point x1(size_w/2,plot.cols-10);
-    Point x2(size_w/2,10);
+    // Point y1(10,size_h/2);
+    // Point y2(plot.rows - 10,size_h/2);
+    // Point x1(size_w/2,plot.cols-10);
+    // Point x2(size_w/2,10);
 
     // Scalar color = Scalar(255,255,255);
     // arrowedLine(plot,origin,x2,color,1,8,0);
@@ -96,7 +101,6 @@ void Tracker:: measAndUpdate(double dT, Rect box, Mat &frame){
     }
     else
 	    kf.correct(meas); // Kalman Correction
-    
     //cout << "Measure matrix:" << endl << meas << endl;
 }
 
@@ -107,7 +111,6 @@ void Tracker:: predict(double dT, Mat &frame){
         kf.transitionMatrix.at<float>(9) = dT;
          // <<<< Matrix A
         //cout << "dT:" << endl << dT << endl;
-        
         state = kf.predict();
         //cout << "State post:" << endl << state << endl;            
         cv::Rect predRect;         
@@ -117,19 +120,27 @@ void Tracker:: predict(double dT, Mat &frame){
         predRect.y = state.at<float>(1) - predRect.height / 2;            
         cv::Point center;          
         center.x = state.at<float>(0);          
-        center.y = state.at<float>(1); 
+        center.y = state.at<float>(1);
 
-        // state(2) and state(3) have dx and dy;
-        plotGraph(state.at<float>(2), state.at<float>(3));
-        if (display == true){
-            namedWindow( winname , 1);
-            imshow( winname, plot);
-            waitKey(1);
-        }
+        dx.push_back(state.at<float>(2));
+        dy.push_back(state.at<float>(3));
         double currentTick = (double) cv::getTickCount();
-        double time = currentTick- startTick / cv::getTickFrequency();
+        time.push_back(currentTick- startTick / cv::getTickFrequency());
+        if(display == true){
+            ostringstream ss;
+            ss << "Output/" << fileName << ".csv";
+            string name = ss.str();
+            cout << name << endl;
+            ofstream myfile(name.c_str());
+            for (int i = 0; i<dx.size(); i++)
+                if(*(dx.begin()+i)!=0)
+                    myfile << *(time.begin()+i) << "\t" << *(dx.begin()+i) << "\t" << *(dy.begin()+i) <<endl;
+            myfile.close();
+            display = false;
+        }
+        // state(2) and state(3) have dx and dy;
+        //plotGraph(state.at<float>(2), state.at<float>(3));
         //cout << time <<endl;
-
         Scalar color = Scalar(255,0,0);
         rectangle(frame, predRect, color, 1, 8, 0 );
     }

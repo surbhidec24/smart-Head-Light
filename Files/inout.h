@@ -21,7 +21,7 @@ void displayImage(Mat img);
 void convert2Binary(Mat img, Mat &img_bw);
 void readVideoAndBox(string filename);
 int findNext(Tracker myTracker, vector<Rect>bBoxes);
-void trackCars(string filename);
+int trackCars(string filename);
 void onMouse( int event, int x, int y, int, void* );
 
 #endif
