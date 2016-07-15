@@ -8,17 +8,19 @@
 #include <iostream>
 #include <vector>
 #include <math.h>
+#include "Tracker.h"
+#include <stdbool.h>
 
 using namespace cv;
 using namespace std;
 
-struct minmax;
-vector<Rect> getBoundingBoxes(Mat img);
 vector<Rect> getBlobs(Mat img);
 void getPairs(vector<Rect> &vList, vector<Rect> &pairs);
-void getShape(Mat img_bw, vector<Rect> &blobList);
-void tracer(Mat img_bw, Mat &tempMatrix, int start_i, int start_j, int init, vector<Rect> &blobList);
-void tracerUtil(Mat img_bw, Mat &tempMatrix , int start_i, int start_j, int i, int j, int init, 
-			Point &myMin, Point &myMax);
+vector<Rect> thresh_callback(int, void* );
+int trackCars(string filename);
+bool verify(Rect myRect);
+int findNext(Tracker myTracker, vector<Rect>bBoxes);
+void onMouse( int event, int x, int y, int, void* );
+
 
 #endif

@@ -56,24 +56,6 @@ void Tracker:: init_tracker(){
     display = false;
     notFound = 0;
     startTick = (double) cv::getTickCount();
-
-    //plt::plot({1,2,3,4});
-    //plt::show();
-
-    // Mat plot_(size_h,size_w,type);
-    // plot = plot_;
-    // count = 0;
-    
-    // Point y1(10,size_h/2);
-    // Point y2(plot.rows - 10,size_h/2);
-    // Point x1(size_w/2,plot.cols-10);
-    // Point x2(size_w/2,10);
-
-    // Scalar color = Scalar(255,255,255);
-    // arrowedLine(plot,origin,x2,color,1,8,0);
-    // arrowedLine(plot,origin,y2,color,1,8,0);
-    // arrowedLine(plot,origin,x1,color,1,8,0);
-    // arrowedLine(plot,origin,y1,color,1,8,0);
     
 }
 
@@ -122,22 +104,22 @@ void Tracker:: predict(double dT, Mat &frame){
         center.x = state.at<float>(0);          
         center.y = state.at<float>(1);
 
-        dx.push_back(state.at<float>(2));
-        dy.push_back(state.at<float>(3));
-        double currentTick = (double) cv::getTickCount();
-        time.push_back(currentTick- startTick / cv::getTickFrequency());
-        if(display == true){
-            ostringstream ss;
-            ss << "Output/" << fileName << ".csv";
-            string name = ss.str();
-            cout << name << endl;
-            ofstream myfile(name.c_str());
-            for (int i = 0; i<dx.size(); i++)
-                if(*(dx.begin()+i)!=0)
-                    myfile << *(time.begin()+i) << "\t" << *(dx.begin()+i) << "\t" << *(dy.begin()+i) <<endl;
-            myfile.close();
-            display = false;
-        }
+        // dx.push_back(state.at<float>(2));
+        // dy.push_back(state.at<float>(3));
+        // double currentTick = (double) cv::getTickCount();
+        // time.push_back(currentTick- startTick / cv::getTickFrequency());
+        // if(display == true){
+        //     ostringstream ss;
+        //     ss << "Output/" << fileName << ".csv";
+        //     string name = ss.str();
+        //     cout << name << endl;
+        //     ofstream myfile(name.c_str());
+        //     for (int i = 0; i<dx.size(); i++)
+        //         if(*(dx.begin()+i)!=0)
+        //             myfile << *(time.begin()+i) << "\t" << *(dx.begin()+i) << "\t" << *(dy.begin()+i) <<endl;
+        //     myfile.close();
+        //     display = false;
+        // }
         // state(2) and state(3) have dx and dy;
         //plotGraph(state.at<float>(2), state.at<float>(3));
         //cout << time <<endl;
